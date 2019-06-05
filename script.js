@@ -1,87 +1,52 @@
-const classNames = {
-  TODO_ITEM: 'todo-container',
-  TODO_CHECKBOX: 'todo-checkbox',
-  TODO_TEXT: 'todo-text',
-  TODO_DELETE: 'todo-delete',
-}
-
 const list = document.getElementById('todo-list')
 const itemCountSpan = document.getElementById('item-count')
 const uncheckedCountSpan = document.getElementById('unchecked-count')
+const todoInput = document.getElementById('todo-input')
 
 const newTodo = () => {
-  const todoItem = document.createElement('li');
+  
+  if (! todoInput.checkValidity()) {
+    alert("Your TODO title is missing")
+    
+    return false
+  }
 
-  todoItem.classList.add(classNames.TODO_ITEM);
-  todoItem.append(createTodoCheckbox());
-  todoItem.append(createTodoRemoveButton());
-  todoItem.append(createTodoText());
+  list.insertAdjacentHTML('beforeend', todoTemplate(todoInput.value))
+  list.lastElementChild.querySelector('.close-btn').addEventListener('click', deleteTodo)
 
-  list.append(todoItem);
+  itemCountSpan.innerHTML++
+  uncheckedCountSpan.innerHTML++
 
-  itemCountSpan.innerHTML++;
-  uncheckedCountSpan.innerHTML++;
+  todoInput.value = ""
 }
 
-const createTodoCheckbox = () => {
-  const todoCheckbox = document.createElement('input');
+const checkTodo = (el) => {
+  el.classList.toggle('checked')
 
-  todoCheckbox.type = "checkbox";
-  todoCheckbox.classList.add(classNames.TODO_CHECKBOX);
-
-  todoCheckbox.addEventListener('change', (el) => handleTodoCheckbox(el));
-
-  return todoCheckbox;
-}
-
-const createTodoRemoveButton = () => {
-  const todoRemoveButton = document.createElement('button');
-
-  todoRemoveButton.classList.add('button', classNames.TODO_DELETE);
-  todoRemoveButton.innerHTML = 'Remove';
-
-  todoRemoveButton.addEventListener('click', (el) => handleTodoDeletion(el));
-
-  return todoRemoveButton;
-}
-
-const createTodoText = () => {
-  const todoText = document.createElement('span');
-
-  todoText.classList.add(classNames.TODO_TEXT);
-  todoText.innerHTML = 'Todo';
-
-  return todoText;
-}
-
-const handleTodoCheckbox = (el) => {
-  if (el.target.checked) {
-    uncheckedCountSpan.innerHTML--;
+  if (el.classList.contains('checked')) {
+    uncheckedCountSpan.innerHTML--
   } else {
-    uncheckedCountSpan.innerHTML++;
+    uncheckedCountSpan.innerHTML++
   }
 }
 
-const handleTodoDeletion = (el) => {
-  let newItemCount = 0;
-  let newUncheckedCount = 0;
+const deleteTodo = (el) => {  
+  const todoContainer = el.target.parentElement
 
-  el.target.parentElement.parentNode.removeChild(el.target.parentElement);
+  todoContainer.parentNode.removeChild(el.target.parentElement)
 
-  const allTodoItems = [...document.getElementsByClassName(classNames.TODO_ITEM)];
+  if (! todoContainer.querySelector('.checked')) {
+    uncheckedCountSpan.innerHTML--
+  }
 
-  list.innerHTML = '';
-
-  allTodoItems.forEach((item) => {
-    list.append(item);
-
-    newItemCount++;
-
-    if (! item.firstChild.checked) {
-      newUncheckedCount++;
-    }
-  });
-
-  itemCountSpan.innerHTML = newItemCount;
-  uncheckedCountSpan.innerHTML = newUncheckedCount;
+  itemCountSpan.innerHTML--
 }
+
+const todoTemplate = (todoTitle) => `
+  <div class="todo-container text-gray-700 text-center mt-2">
+    <div class="flex justify-between bg-yellow-100 shadow mb-2">
+      <span class="w-full text-left leading-loose p-2 pl-10 cursor-pointer" onClick="checkTodo(this)">${todoTitle}</span>
+      <div class="close-btn p-2 pr-8 text-xl cursor-pointer"></div>
+    </div>
+  </div>
+`
